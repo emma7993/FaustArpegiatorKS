@@ -1,0 +1,200 @@
+declare name        "ArpegiatorKS";
+declare version     "1.0";
+declare author      "Emm";
+declare license     "GNU";
+declare copyright   "(c) Emm 2015";
+
+/*
+  This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+
+//-----------------------------------------------
+//              Arpegiator 1.0
+//      using kasplus-strong as input signal
+//-----------------------------------------------
+
+
+import ("filter.lib");
+import ("music.lib");
+import ("oscillator.lib");
+
+
+
+
+
+
+//PARAMETROS GLOBALES
+
+filter=_<:_,_@1:>*(0.5);
+mute= 1-checkbox("Mute");
+fb=vslider("String Fb",0.999,0.900,.999,0.001);
+gain=hslider("Gain[tooltip: Volumen]",0.5,0,1,0.01):smooth(0.999);
+
+qn=((60*SR)/bpm);
+
+
+
+//Metronomo
+
+
+mtrnm= beat(bpm)*gm*mutem:>_;
+bpm=nentry("[2]BPM mtrnm",120,0,240,1);
+gm=hslider("[1]Mtrnm Gain[tooltip: Metronome volume]",0.5,0,1,0.01):smooth(0.999);
+mutem= 1-checkbox("[0]Mute Mtrnm");
+
+B = 1-checkbox("Resetdly");
+I = int(B);             // convert button signal from float to integer
+R = (I-I') <= 0;        // Reset capture when button is pressed
+D = (+(I):*(R))~_;      // Compute capture duration while button is pressed: 0..NNNN0..MMM
+
+
+loop = y:>_ *B:(+ : delay(8*65536, qn*8)*B) ~ *(1.0-pulse1):>_ ;
+
+y=hgroup("[1]Notes",n1,n2,n3,n4,n5,n6,n7,n8);
+
+
+
+//SECUENCIA DE PULSOS
+
+
+
+
+pulse1= button("gate")<:_,_@1:-: >(0);
+pulse2= pulse1: delay(8*65536,qn);
+pulse3= pulse2: delay(8*65536,qn);
+pulse4= pulse3: delay(8*65536,qn);
+pulse5= pulse4: fdelay(8*65536,qn);
+pulse6= pulse5: fdelay(8*65536,qn);
+pulse7= pulse6: fdelay(8*65536,qn);
+pulse8= pulse7: fdelay(8*65536,qn);
+
+
+
+   //nota 1
+
+n1=  (imp1+_: fdelay(SR,echoDelay1)) ~ *(feedback1);
+    n1Group(x)=vgroup("[0]Nota 1",x);
+	echoDelay1= n1Group(hslider("[1]Echo Delay[tooltip: establece el retraso del eco][unit: ms][style:knob]", 0.05, 0.001, 1, 0.001)*SR);
+	feedback1 = n1Group(hslider("[2]feedback[tooltip: establece el porcentaje de retroalimentacion][style:knob]",0,0,0.99,0.01): smooth(0.999));
+	imp1= pulse1:string1;
+	string1=_<:(+~fdelay(1024,SR/freq1)*fb):>filter;
+	note1=n1Group(nentry("[0]Midi Note",60,0,127,1));
+    p1=(note1-69)/12;
+    freq1= (2^p1)*440;
+    dly1 = n1Group(hslider("[3]Delay 1[style:knob]",300,1,1000,1)*SR/1000);
+ 
+    
+   //nota 2
+
+n2= (imp2+_ : fdelay(SR,echoDelay2)) ~ *(feedback2);
+    n2Group(x)=vgroup("[2]Nota 2",x);
+	echoDelay2= n2Group(hslider("[1]Echo Delay[tooltip: establece el retraso del eco][unit: ms][style:knob]", 0.05, 0.001, 1, 0.001)*SR);
+	feedback2= n2Group(hslider("[2]feedback[tooltip: establece el porcentaje de retroalimentacion][style:knob]",0,0,0.99,0.01): smooth(0.999));
+	imp2 = pulse2:string2;
+	string2=_<:(+~fdelay(1024,SR/freq2)*fb):>filter;
+	note2=n2Group(nentry("[0]Midi Note",72,0,127,1));
+    p2=(note2-69)/12;
+    freq2= (2^p2)*440;
+    dly2 = n2Group(hslider("[3]Delay 2[style:knob]",300,1,1000,1)*SR/1000);
+    
+	
+	//nota 3
+
+n3= (imp3+_ : fdelay(SR,echoDelay3)) ~ *(feedback3);
+    n3Group(x)=vgroup("[3]Nota 3",x);
+	echoDelay3= n3Group(hslider("[1]Echo Delay[tooltip: establece el retraso del eco][unit: ms][style:knob]", 0.05, 0.001, 1, 0.001)*SR);
+	feedback3= n3Group(hslider("[2]feedback[tooltip: establece el porcentaje de retroalimentacion][style:knob]",0,0,0.99,0.01): smooth(0.999));
+	imp3 = pulse3:string3;
+	string3=_<:(+~fdelay(1024,SR/freq3)*fb):>filter;
+	note3=n3Group(nentry("[0]Midi Note",70,0,127,1));
+    p3=(note3-69)/12;
+    freq3= (2^p3)*440;
+    dly3 = n3Group(hslider("[3]Delay 3[style:knob]",300,1,1000,1)*SR/1000);
+	
+	
+	//nota 4
+
+n4= (imp4+_ : fdelay(SR,echoDelay4)) ~ *(feedback4);
+    n4Group(x)=vgroup("[4]Nota 4",x);
+	echoDelay4= n4Group(hslider("[1]Echo Delay[tooltip: establece el retraso del eco][unit: ms][style:knob]", 0.05, 0.001, 1, 0.001)*SR);
+	feedback4= n4Group(hslider("[2]feedback[tooltip: establece el porcentaje de retroalimentacion][style:knob]",0,0,0.99,0.01): smooth(0.999));
+	imp4 = pulse4:string4;
+	string4=_<:(+~fdelay(1024,SR/freq4)*fb):>filter;
+	note4=n4Group(nentry("[0]Midi Note",63,0,127,1));
+    p4=(note4-69)/12;
+    freq4= (2^p4)*440;
+    dly4= n4Group(hslider("[3]Delay 4[style:knob]",300,1,1000,1)*SR/1000);
+	
+	
+	//nota 5
+
+n5= (imp5+_ : fdelay(SR,echoDelay5)) ~ *(feedback5);
+    n5Group(x)=vgroup("[5]Nota 5",x);
+	echoDelay5= n5Group(hslider("[1]Echo Delay[tooltip: establece el retraso del eco][unit: ms][style:knob]", 0.05, 0.001, 1, 0.001)*SR);
+	feedback5= n5Group(hslider("[2]feedback[tooltip: establece el porcentaje de retroalimentacion][style:knob]",0,0,0.99,0.01): smooth(0.999));
+	imp5 = pulse5:string5;
+	string5=_<:(+~fdelay(1024,SR/freq5)*fb):>filter;
+	note5=n5Group(nentry("[0]Midi Note",56,0,127,1));
+    p5=(note5-69)/12;
+    freq5= (2^p5)*440;
+    dly5 = n5Group(hslider("[3]Delay 5[style:knob]",300,1,1000,1)*SR/1000);
+
+
+
+//nota 6
+
+n6= (imp6+_ : fdelay(SR,echoDelay6)) ~ *(feedback6);
+    n6Group(x)=vgroup("[6]Nota 6",x);
+	echoDelay6= n6Group(hslider("[1]Echo Delay[tooltip: establece el retraso del eco][unit: ms][style:knob]", 0.05, 0.001, 1, 0.001)*SR);
+	feedback6= n6Group(hslider("[2]feedback[tooltip: establece el porcentaje de retroalimentacion][style:knob]",0,0,0.99,0.01): smooth(0.999));
+	imp6 = pulse6:string6;
+	string6=_<:(+~fdelay(1024,SR/freq6)*fb):>filter;
+	note6=n6Group(nentry("[0]Midi Note",58,0,127,1));
+    p6=(note6-69)/12;
+    freq6= (2^p6)*440;
+    dly6 = n6Group(hslider("[3]Delay 6[style:knob]",300,1,1000,1)*SR/1000);
+    
+    
+//nota 7
+
+n7= (imp7+_ : fdelay(SR,echoDelay7)) ~ *(feedback7);
+    n7Group(x)=vgroup("[7]Nota 7",x);
+	echoDelay7= n7Group(hslider("[1]Echo Delay[tooltip: establece el retraso del eco][unit: ms][style:knob]", 0.05, 0.001, 1, 0.001)*SR);
+	feedback7= n7Group(hslider("[2]feedback[tooltip: establece el porcentaje de retroalimentacion][style:knob]",0,0,0.99,0.01): smooth(0.999));
+	imp7 = pulse7:string7;
+	string7=_<:(+~fdelay(1024,SR/freq7)*fb):>filter;
+	note7=n7Group(nentry("[0]Midi Note",68,0,127,1));
+    p7=(note7-69)/12;
+    freq7= (2^p7)*440;
+    dly7 = n7Group(hslider("[3]Delay 7[style:knob]",300,1,1000,1)*SR/1000);
+    
+
+//nota 8
+
+n8= (imp8+_ : fdelay(SR,echoDelay8)) ~ *(feedback8);
+    n8Group(x)=vgroup("[8]Nota 8",x);
+	echoDelay8= n8Group(hslider("[1]Echo Delay[tooltip: establece el retraso del eco][unit: ms][style:knob]", 0.05, 0.001, 1, 0.001)*SR);
+	feedback8= n8Group(hslider("[2]feedback[tooltip: establece el porcentaje de retroalimentacion][style:knob]",0,0,0.99,0.01): smooth(0.999));
+	imp8 = pulse8:string8;
+	string8=_<:(+~fdelay(1024,SR/freq8)*fb):>filter;
+	note8=n8Group(nentry("[0]Midi Note",70,0,127,1));
+    p8=(note8-69)/12;
+    freq8= (2^p8)*440;
+    dly8= n8Group(hslider("[3]Delay 8[style:knob]",300,1,1000,1)*SR/1000);
+
+
+process=loop:>_*gain*mute,mtrnm:>_<:(_,_);
+
