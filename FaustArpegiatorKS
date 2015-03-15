@@ -56,10 +56,9 @@ gm=hslider("[1]Mtrnm Gain[tooltip: Metronome volume]",0.5,0,1,0.01):smooth(0.999
 mutem= 1-checkbox("[0]Mute Mtrnm");
 
 B = 1-checkbox("Resetdly");
-I = int(B);             // convert button signal from float to integer
-R = (I-I') <= 0;        // Reset capture when button is pressed
-D = (+(I):*(R))~_;      // Compute capture duration while button is pressed: 0..NNNN0..MMM
-
+I = int(B);             
+R = (I-I') <= 0;      
+D = (+(I):*(R))~_;    
 
 loop = y:>_ *B:(+ : delay(8*65536, qn*8)*B) ~ *(1.0-pulse1):>_ ;
 
